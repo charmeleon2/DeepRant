@@ -54,19 +54,20 @@ fn get_system_prompt(settings: &crate::store::AppSettings, scenes: &[crate::stor
     let mode_desc = match mode.as_str() {
         "toxic" => {
             r#"<toxic_style>
-• 翻译用户原文后，还需进行2-3句扩写
-• 使用中国百度贴吧老哥的大脑进行思考
-• 用最为地狱笑话的心态来攻击对手
-• 根据目标翻译语言，在翻译的同时加入最为猛烈的地域歧视攻击
-• 使用双重隐喻
-• 融入游戏场景梗
+• 翻译用户原文，可适当追加一句犀利嘲讽
+• 使用游戏社区老玩家的口吻进行毒舌攻击
+• 融入游戏场景梗和双重隐喻
 • 符号化敏感词（如f*ck/cl@ssic）
+• 语气要有压迫感，让对手破防
 </toxic_style>
 
 <references>
-• COD/堡垒之夜社区
-• 百度贴吧风格
-• 美式街头俚语
+根据目标语言选择对应的游戏社区风格：
+• 英语：Reddit/4chan/COD lobby 风格
+• 日语：2ch/ニコニコ 掲示板风格
+• 韩语：디시인사이드/롤 갤风格
+• 中文：百度贴吧/NGA 风格
+• 其他语言：该语言游戏社区中常见的攻击性俚语风格
 </references>
 
 <rules>
@@ -79,18 +80,25 @@ fn get_system_prompt(settings: &crate::store::AppSettings, scenes: &[crate::stor
             r#"<pro_style>
 • 赛事解说风格
 • 选手交流简语
-• 15字以内短句
-• 英文术语优先（如roam）
-• 添加战术标记（[推线]/[Gank]）
+• 极简短句，能一眼扫完
+• 使用目标语言的通用战术缩写和电竞术语
 </pro_style>
 
 <rhythm>
-• 0.5秒可读速度
 • 去除冗余修饰词
+• 信息密度优先
 </rhythm>"#
                 .to_string()
         }
-        _ => String::new(),
+        _ => {
+            r#"<default_style>
+• 准确自然，简洁直接
+• 符合游戏内即时交流习惯
+• 不过度修饰，不过度口语化
+• 保持原文语气和意图
+</default_style>"#
+                .to_string()
+        }
     };
 
     // 从 scenes 中查找当前场景的 prompt，找不到则使用通用描述
@@ -154,6 +162,13 @@ pub async fn translate_with_gpt(app: &AppHandle, original: &str) -> Result<Strin
 
     let client = Client::new();
 
+    // 根据翻译模式动态调整参数
+    let (temperature, frequency_penalty) = match settings.translation_mode.as_str() {
+        "toxic" => (0.9, 0.0),   // 嘴臭模式：高随机性，更有创意
+        "pro" => (0.5, 0.0),     // 职业玩家：稳定简洁
+        _ => (0.6, 0.0),         // 自动模式：适中平衡
+    };
+
     let request_body = json!({
         "model": model_config.model_name,
         "messages": [
@@ -167,12 +182,12 @@ pub async fn translate_with_gpt(app: &AppHandle, original: &str) -> Result<Strin
             }
         ],
         "max_tokens": 300,
-        "temperature": 0.9,
+        "temperature": temperature,
         "top_p": 0.7,
         "n": 1,
         "stream": false,
         "presence_penalty": 0.3,
-        "frequency_penalty": -0.3
+        "frequency_penalty": frequency_penalty
     });
 
     let response = match client
