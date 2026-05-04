@@ -74,9 +74,9 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEyRUQyRTlGMEZGRjZCNUQKUldSZGEvOFBueTd0RXB1eStiY2ovR1c0M2lIK0JzTXR0TW9nTjR1QXNsbU9VOGNndG12VHg5L3UK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDM0MyMENCMjVCNzVBQzEKUldUQldyY2x5eUE4YkdIaHdlOWoybFdQYjkzZzFVbEg0TTUwM3M0Q0Q0bWZraXphVEU5bENQUkEK",
       "endpoints": [
-        "https://github.com/liseami/DeepRant/releases/latest/download/latest.json"
+        "https://github.com/charmeleon2/DeepRant/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
